@@ -143,7 +143,7 @@ void *malloc(size_t size) {
       }
     } else {      // Found free block
       // TODO: consider splitting block here.
-      if (block->size <= size) {
+      if (block->size < size) {
         split_block(block, size);
       }
       block->free = 0;
