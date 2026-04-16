@@ -124,6 +124,9 @@ void *malloc(size_t size) {
       }
     } else {      // Found free block
       // TODO: consider splitting block here.
+      if (block->size <= size) {
+        split_block(block, size)
+      }
       block->free = 0;
       block->magic = 0x77777777;
     }
@@ -227,7 +230,6 @@ void split_block(struct block_meta *block, size_t size) {
     new_block->next = block->next;
     new_block->prev = block;
     new_block->free = 1;
-    new_block->magic = 0x12345678;
 
     if (new_block->next) {
         new_block->next->prev = new_block;
