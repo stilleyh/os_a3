@@ -169,12 +169,12 @@ void free(void *ptr) {
 
   // merge backward
   if (block_ptr->prev && block_ptr->prev->free) {
-    merge_next(block_ptr->prev);
+    merge_blocks(block_ptr->prev);
   }
 
   // merge forward
   if (block_ptr->next && block_ptr->next->free) {
-    merge_next(block_ptr);
+    merge_blocks(block_ptr);
   }
 }
 
