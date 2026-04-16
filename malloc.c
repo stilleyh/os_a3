@@ -32,7 +32,7 @@ struct block_meta {
 
 void *global_base = NULL;
 
-// Iterate through blocks until we find one that's large enough.
+// First-fit allocation (find any usable block)
 // TODO: split block up if it's larger than necessary
 struct block_meta *find_free_block(struct block_meta **last, size_t size) {
   struct block_meta *current = global_base;
@@ -41,6 +41,40 @@ struct block_meta *find_free_block(struct block_meta **last, size_t size) {
     current = current->next;
   }
   return current;
+}
+
+// Best-fit allocation (find smallest usable block)
+struct block_meta *best_fit(size_t size) {
+    struct block_meta *curr = global_base;
+    struct block_meta *best = NULL;
+
+    while (curr) {
+        if (curr->free && curr->size >= size) {
+            if (!best || curr->size < best->size) {
+                best = curr;
+            }
+        }
+        curr = curr->next;
+    }
+
+    return best;
+}
+
+// Worst-fit allocation (find largest usable block)
+struct block_meta *worst_fit(size_t size) {
+    struct block_meta *curr = global_base;
+    struct block_meta *worst = NULL;
+
+    while (curr) {
+        if (curr->free && curr->size >= size) {
+            if (!worst || curr->size > worst->size) {
+                worst = curr;
+            }
+        }
+        curr = curr->next;
+    }
+
+    return worst;
 }
 
 struct block_meta *request_space(struct block_meta* last, size_t size) {
