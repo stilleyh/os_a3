@@ -144,17 +144,38 @@ struct block_meta *get_block_ptr(void *ptr) {
   return (struct block_meta*)ptr - 1;
 }
 
+// Merge / coalesce blocks
+void merge_blocks(struct block_meta *block) {
+    struct block_meta *next = block->next;
+
+    if (!next || !next->free) return;
+
+    block->size += META_SIZE + next->size;
+    block->next = next->next;
+
+    if (next->next) {
+        next->next->prev = block;
+    }
+}
+
+// Merge blocks, then free finalized block
 void free(void *ptr) {
-  if (!ptr) {
-    return;
+  if (!ptr) return;
+
+  struct block_meta *block_ptr = get_block_ptr(ptr);
+  assert(block_ptr->free == 0);
+
+  block_ptr->free = 1;
+
+  // merge backward
+  if (block_ptr->prev && block_ptr->prev->free) {
+    merge_next(block_ptr->prev);
   }
 
-  // TODO: consider merging blocks once splitting blocks is implemented.
-  struct block_meta* block_ptr = get_block_ptr(ptr);
-  assert(block_ptr->free == 0);
-  assert(block_ptr->magic == 0x77777777 || block_ptr->magic == 0x12345678);
-  block_ptr->free = 1;
-  block_ptr->magic = 0x55555555;  
+  // merge forward
+  if (block_ptr->next && block_ptr->next->free) {
+    merge_next(block_ptr);
+  }
 }
 
 void *realloc(void *ptr, size_t size) {
@@ -181,6 +202,7 @@ void *realloc(void *ptr, size_t size) {
   return new_ptr;
 }
 
+// Leak counter (bytes)
 size_t get_leaks() {
   struct block_meta *current = global_base;
   size_t total = 0;
@@ -193,6 +215,26 @@ size_t get_leaks() {
   }
 
   return total;
+}
+
+// Block splitting function
+void split_block(struct block_meta *block, size_t size) {
+    // pointer to memory right after this block
+    struct block_meta *new_block =
+        (struct block_meta *)((char *)(block + 1) + size);
+
+    new_block->size = block->size - size - META_SIZE;
+    new_block->next = block->next;
+    new_block->prev = block;
+    new_block->free = 1;
+    new_block->magic = 0x12345678;
+
+    if (new_block->next) {
+        new_block->next->prev = new_block;
+    }
+
+    block->size = size;
+    block->next = new_block;
 }
 
 int main() {
