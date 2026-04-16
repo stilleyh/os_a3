@@ -169,13 +169,13 @@ int main() {
 
   // Malloc / Calloc block
   for (int i = 0; i < 10; i++) {
-    mal[i] = malloc(16 + i * 8);      // offset to avoid malloc(0)
-    cal[i] = calloc(1, 32 + i * 4);
+    mal[i] = malloc(1 + i);      // offset to avoid malloc(0)
+    cal[i] = calloc(1, 1 + i);
   }
 
   // Realloc block
   for (int i = 0; i < 10; i++) {
-    rea[i] = realloc(mal[i], 64 + i * 8);
+    rea[i] = realloc(mal[i], i + i);
   }
 
   // Free all malloc allocations
