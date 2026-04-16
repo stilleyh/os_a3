@@ -175,7 +175,7 @@ int main() {
 
   // Realloc block
   for (int i = 0; i < 10; i++) {
-    rea[i] = realloc(mal[i], i + i);
+    rea[i] = realloc(mal[i], 1 + i);
   }
 
   // Free all calloc allocations
