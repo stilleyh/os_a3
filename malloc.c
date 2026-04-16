@@ -178,6 +178,11 @@ int main() {
     rea[i] = realloc(mal[i], 64 + i * 8);
   }
 
+  // Free all malloc allocations
+  for (int i = 0; i < 10; i++) {
+    free(mal[i]);
+  }
+
   // Free all calloc allocations
   for (int i = 0; i < 10; i++) {
     free(cal[i]);
