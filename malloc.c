@@ -97,6 +97,25 @@ struct block_meta *request_space(struct block_meta* last, size_t size) {
   return block;
 }
 
+// Block splitting function
+void split_block(struct block_meta *block, size_t size) {
+    // pointer to memory right after this block
+    struct block_meta *new_block =
+        (struct block_meta *)((char *)(block + 1) + size);
+
+    new_block->size = block->size - size - META_SIZE;
+    new_block->next = block->next;
+    new_block->prev = block;
+    new_block->free = 1;
+
+    if (new_block->next) {
+        new_block->next->prev = new_block;
+    }
+
+    block->size = size;
+    block->next = new_block;
+}
+
 // If it's the first ever call, i.e., global_base == NULL, request_space and set global_base.
 // Otherwise, if we can find a free block, use it.
 // If not, request_space.
@@ -125,7 +144,7 @@ void *malloc(size_t size) {
     } else {      // Found free block
       // TODO: consider splitting block here.
       if (block->size <= size) {
-        split_block(*block, size);
+        split_block(block, size);
       }
       block->free = 0;
       block->magic = 0x77777777;
@@ -220,24 +239,7 @@ size_t get_leaks() {
   return total;
 }
 
-// Block splitting function
-void split_block(struct block_meta *block, size_t size) {
-    // pointer to memory right after this block
-    struct block_meta *new_block =
-        (struct block_meta *)((char *)(block + 1) + size);
 
-    new_block->size = block->size - size - META_SIZE;
-    new_block->next = block->next;
-    new_block->prev = block;
-    new_block->free = 1;
-
-    if (new_block->next) {
-        new_block->next->prev = new_block;
-    }
-
-    block->size = size;
-    block->next = new_block;
-}
 
 int main() {
   void *mal[10], *cal[10], *rea[10];
