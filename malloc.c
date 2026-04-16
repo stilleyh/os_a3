@@ -219,7 +219,7 @@ int main() {
 
   // Free realloc results
   // Last item left unfreed to demonstrate leak
-  for (int i = 0; i < 9; i++) {
+  for (int i = 0; i <= 9; i++) {
     free(rea[i]);
   }
 
