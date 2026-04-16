@@ -145,3 +145,53 @@ void *realloc(void *ptr, size_t size) {
   free(ptr);  
   return new_ptr;
 }
+
+size_t get_leaks() {
+  struct block_meta *current = global_base;
+  size_t total = 0;
+
+  while (current) {
+    if (!current->free) {
+      total += current->size;
+    }
+    current = current->next;
+  }
+
+  return total;
+}
+
+int main() {
+  void *mal[10], *cal[10], *rea[10];
+
+  void *heap_start = sbrk(0);
+  printf("Heap start: %p\n", heap_start);
+
+  // Malloc / Calloc block
+  for (int i = 0; i < 10; i++) {
+    mal[i] = malloc(16 + i * 8);      // offset to avoid malloc(0)
+    cal[i] = calloc(1, 32 + i * 4);
+  }
+
+  // Realloc block
+  for (int i = 0; i < 10; i++) {
+    rea[i] = realloc(mal[i], 64 + i * 8);
+  }
+
+  // Free all calloc allocations
+  for (int i = 0; i < 10; i++) {
+    free(cal[i]);
+  }
+
+  // Free realloc results
+  // Last item left unfreed to demonstrate leak
+  for (int i = 0; i < 9; i++) {
+    free(rea[i]);
+  }
+
+  void *heap_end = sbrk(0);
+  printf("Heap end: %p\n", heap_end);
+
+  size_t leaks = get_leaks();
+  printf("Total memory leaked: %zu bytes\n", leaks);
+  return 0;
+}
