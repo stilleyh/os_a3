@@ -29,7 +29,7 @@ struct block_meta {
 };
 
 #define META_SIZE sizeof(struct block_meta)
-#define MIN_SPLIT_SIZE 8 // Split size minimum to prevent problematic fragmentation
+#define MIN_SPLIT_SIZE 8 // Split size minimum to prevent ugly fragmentation
 
 void *global_base = NULL;
 
@@ -144,8 +144,6 @@ void *malloc(size_t size) {
       }
     } else {      // Found free block
       // TODO: consider splitting block here.
-    
-
     if (block->size >= size + META_SIZE + MIN_SPLIT_SIZE) {
       split_block(block, size);
     }
@@ -194,9 +192,9 @@ void free(void *ptr) {
 
   // merge backward
   if (block_ptr->prev && block_ptr->prev->free) {
-    merge_blocks(block_ptr->prev);
+    block_ptr = block_ptr->prev;
+    merge_blocks(block_ptr);
   }
-
   // merge forward
   if (block_ptr->next && block_ptr->next->free) {
     merge_blocks(block_ptr);
@@ -246,7 +244,8 @@ size_t get_leaks() {
 void print_heap() {
     struct block_meta *curr = global_base;
     while (curr) {
-        printf("Block %p | size=%zu | free=%d\n", curr, curr->size, curr->free);
+        printf("Block %p | size=%zu | free=%d | prev=%p | next=%p\n",
+       curr, curr->size, curr->free, curr->prev, curr->next);
         curr = curr->next;
     }
 }
