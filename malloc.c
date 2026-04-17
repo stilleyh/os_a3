@@ -29,6 +29,7 @@ struct block_meta {
 };
 
 #define META_SIZE sizeof(struct block_meta)
+#define MIN_SPLIT_SIZE 8 // Split size minimum to prevent problematic fragmentation
 
 void *global_base = NULL;
 
@@ -143,9 +144,11 @@ void *malloc(size_t size) {
       }
     } else {      // Found free block
       // TODO: consider splitting block here.
-      if (block->size >= size + META_SIZE + 1) {
-        split_block(block, size);
-      }
+    
+
+    if (block->size >= size + META_SIZE + MIN_SPLIT_SIZE) {
+      split_block(block, size);
+    }
       block->free = 0;
       block->magic = 0x77777777;
     }
