@@ -274,7 +274,7 @@ int main() {
   print_heap();
 
   // Free all calloc allocations
-  printf("Freeing memory...")
+  printf("Freeing memory...");
   for (int i = 0; i < 10; i++) {
     free(cal[i]);
   }
