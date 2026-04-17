@@ -143,7 +143,7 @@ void *malloc(size_t size) {
       }
     } else {      // Found free block
       // TODO: consider splitting block here.
-      if (block->size < size) {
+      if (block->size >= size + META_SIZE + 1) {
         split_block(block, size);
       }
       block->free = 0;
@@ -239,6 +239,14 @@ size_t get_leaks() {
   return total;
 }
 
+// Print statements for debug
+void print_heap() {
+    struct block_meta *curr = global_base;
+    while (curr) {
+        printf("Block %p | size=%zu | free=%d\n", curr, curr->size, curr->free);
+        curr = curr->next;
+    }
+}
 
 
 int main() {
@@ -246,29 +254,47 @@ int main() {
 
   void *heap_start = sbrk(0);
   printf("Heap start: %p\n", heap_start);
+  print_heap();
 
   // Malloc / Calloc block
+  printf("Testing allocators...")
   for (int i = 0; i < 10; i++) {
     mal[i] = malloc(1 + i);      // offset to avoid malloc(0)
     cal[i] = calloc(1, 1 + i);
   }
 
+  print_heap();
+
   // Realloc block
+  printf("Testing reallocator...")
   for (int i = 0; i < 10; i++) {
     rea[i] = realloc(mal[i], 1 + i);
   }
 
+  print_heap();
+
   // Free all calloc allocations
+  printf("Freeing memory...")
   for (int i = 0; i < 10; i++) {
     free(cal[i]);
   }
 
+  print_heap();
+
   // Free realloc results
   // Last item left unfreed to demonstrate leak
+  printf("Freeing reallocated memory...")
   for (int i = 0; i <= 9; i++) {
     free(rea[i]);
   }
 
+  print_heap();
+
+  void *test1 = malloc(5);
+  void *test2 = malloc(5);
+
+  printf("Test allocations: %p %p\n", test1, test2);
+  
   void *heap_end = sbrk(0);
   printf("Heap end: %p\n", heap_end);
 
