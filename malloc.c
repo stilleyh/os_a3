@@ -257,7 +257,7 @@ int main() {
   print_heap();
 
   // Malloc / Calloc block
-  printf("Testing allocators...");
+  printf("Testing allocators...\n");
   for (int i = 0; i < 10; i++) {
     mal[i] = malloc(1 + i);      // offset to avoid malloc(0)
     cal[i] = calloc(1, 1 + i);
@@ -266,7 +266,7 @@ int main() {
   print_heap();
 
   // Realloc block
-  printf("Testing reallocator...");
+  printf("Testing reallocator...\n");
   for (int i = 0; i < 10; i++) {
     rea[i] = realloc(mal[i], 1 + i);
   }
@@ -274,7 +274,7 @@ int main() {
   print_heap();
 
   // Free all calloc allocations
-  printf("Freeing memory...");
+  printf("Freeing memory...\n");
   for (int i = 0; i < 10; i++) {
     free(cal[i]);
   }
@@ -283,7 +283,7 @@ int main() {
 
   // Free realloc results
   // Last item left unfreed to demonstrate leak
-  printf("Freeing reallocated memory...");
+  printf("Freeing reallocated memory...\n");
   for (int i = 0; i <= 9; i++) {
     free(rea[i]);
   }
@@ -295,6 +295,8 @@ int main() {
 
   printf("Test allocations: %p %p\n", test1, test2);
   
+  print_heap();
+
   void *heap_end = sbrk(0);
   printf("Heap end: %p\n", heap_end);
 
